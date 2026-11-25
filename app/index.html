@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hearth — Household Budget Planner for Families</title>
+<meta name="description" content="Hearth helps a family plan a monthly budget with the 50/30/20 rule, track every expense against its envelope, and reach savings goals — all offline, all free.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#/dashboard">
+      <span class="brand-mark" aria-hidden="true">⌂</span>
+      <span><span class="brand-name">Hearth</span><span class="brand-tag">Household budget, made simple</span></span>
+    </a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
+      <a href="#/planner" data-nav="planner">Budget Planner</a>
+      <a href="#/expenses" data-nav="expenses">Expenses</a>
+      <a href="#/goals" data-nav="goals">Savings Goals</a>
+      <a href="#/guide" data-nav="guide">Guide &amp; Example</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- ============ DASHBOARD ============ -->
+<section class="page" id="page-dashboard" aria-label="Dashboard">
+  <p class="kicker">November 2026 · The Alvarez Family · 4 people</p>
+  <h1>Your money, at a glance.</h1>
+  <p class="lede">Income $5,200 a month. Needs $2,600, wants $1,560, savings $1,040 — the 50/30/20 plan, tracked to the dollar. Everything below is live: change the plan or add an expense and this page updates.</p>
+
+  <div class="grid grid-4" id="stat-cards">
+    <div class="card stat"><div class="label">Monthly income</div><div class="value" id="stat-income">$5,200</div><div class="sub">After tax · 2 earners</div></div>
+    <div class="card stat"><div class="label">Spent so far</div><div class="value" id="stat-spent">$3,859.09</div><div class="sub" id="stat-spent-sub">of $5,200 planned</div></div>
+    <div class="card stat good"><div class="label">Left to spend</div><div class="value" id="stat-left">$1,340.91</div><div class="sub" id="stat-left-sub">26% of income unspent</div></div>
+    <div class="card stat"><div class="label">Saved this month</div><div class="value" id="stat-saved">$1,040</div><div class="sub">Emergency $520 · Retirement $320 · Vacation $200</div></div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:16px">
+    <div class="card">
+      <h2 style="margin-top:0">Where the $5,200 goes</h2>
+      <div class="donut-wrap">
+        <canvas id="donut" width="220" height="220" role="img" aria-label="Donut chart of the budget: needs 50 percent, wants 30 percent, savings 20 percent"></canvas>
+        <div>
+          <div class="legend">
+            <span style="--c:#14532d">Needs — $2,600 (50%)</span>
+            <span style="--c:#d97706">Wants — $1,560 (30%)</span>
+            <span style="--c:#16a34a">Savings — $1,040 (20%)</span>
+          </div>
+          <p class="small muted">Housing is the biggest single envelope at $1,400. Groceries for four run $550 — about $32 a person a week.</p>
+          <a class="btn" href="#/planner">Adjust the plan →</a>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Envelopes this month</h2>
+      <div id="envelope-list"></div>
+      <p class="small muted" style="margin-bottom:0">Utilities are the fullest envelope — $186.70 of $200 used (93%). Groceries sit at $412.50 of $550 with one shop left. <a href="#/expenses">See every expense →</a></p>
+    </div>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:16px">
+    <div class="card">
+      <h2 style="margin-top:0">Recent expenses</h2>
+      <div id="recent-list"></div>
+      <a class="btn ghost" href="#/expenses">Track an expense →</a>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Savings goals — quick look</h2>
+      <div id="goals-preview"></div>
+      <a class="btn ghost" href="#/goals">Open savings goals →</a>
+    </div>
+  </div>
+
+  <div class="callout green" id="dashboard-tip"><strong>On track.</strong> With 5 days left in November, $1,340.91 remains and no envelope is over budget. Keep the last grocery shop under $137.50 and the month lands exactly on plan.</div>
+</section>
+
+<!-- ============ PLANNER ============ -->
+<section class="page" id="page-planner" aria-label="Budget planner">
+  <p class="kicker">Budget Planner · 50/30/20 rule</p>
+  <h1>Build your monthly plan.</h1>
+  <p class="lede">Start with your income, pick a rule, then slide each category until the plan fits. The chart and totals update as you move — and “Save plan” updates the dashboard and the expense tracker too.</p>
+
+  <div class="card">
+    <label for="income-input">Monthly household income (after tax, USD)</label>
+    <input type="number" id="income-input" min="0" step="10" value="5200">
+    <p class="small muted">Example: the Alvarez family earns $5,200 a month — two salaries after tax.</p>
+    <div class="preset-row" id="preset-row" role="group" aria-label="Budget rule presets"></div>
+    <p class="small muted" id="preset-blurb">The classic rule: half for needs, a third for fun, a fifth saved.</p>
+  </div>
+
+  <div class="grid grid-2" style="margin-top:16px">
+    <div class="card">
+      <h2 style="margin-top:0">Your categories</h2>
+      <div id="slider-list"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn" id="save-plan" type="button">Save plan</button>
+        <button class="btn ghost" id="reset-plan" type="button">Reset to 50/30/20</button>
+      </div>
+      <p class="small muted" id="plan-message" role="status"></p>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Your plan, visualised</h2>
+      <canvas id="donut-planner" width="260" height="260" role="img" aria-label="Donut chart of your current plan"></canvas>
+      <div class="legend">
+        <span style="--c:#14532d" id="leg-needs">Needs — $2,600</span>
+        <span style="--c:#d97706" id="leg-wants">Wants — $1,560</span>
+        <span style="--c:#16a34a" id="leg-savings">Savings — $1,040</span>
+      </div>
+      <table style="margin-top:14px">
+        <tr><th>Planned total</th><td class="num" id="plan-total">$5,200</td></tr>
+        <tr><th>Income</th><td class="num" id="plan-income">$5,200</td></tr>
+        <tr><th>Unassigned</th><td class="num" id="plan-unassigned">$0</td></tr>
+      </table>
+      <div class="callout" id="plan-warning"><strong>Balanced.</strong> Every dollar has a job — income minus plan is $0.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EXPENSES ============ -->
+<section class="page" id="page-expenses" aria-label="Expense tracker">
+  <p class="kicker">Expense Tracker · November 2026</p>
+  <h1>Every dollar, accounted for.</h1>
+  <p class="lede">Add what you spend and watch each envelope fill up. Over budget? The row turns red and the warning tells you exactly how much to pull back. Expenses are saved in your browser (localStorage) — nothing leaves your device.</p>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h2 style="margin-top:0">Add an expense</h2>
+      <form id="expense-form">
+        <label for="exp-date">Date</label>
+        <input type="date" id="exp-date" value="2026-11-26" required>
+        <label for="exp-desc">What was it?</label>
+        <input type="text" id="exp-desc" placeholder="e.g. Weekly grocery shop" maxlength="80" required>
+        <label for="exp-cat">Category</label>
+        <select id="exp-cat"></select>
+        <label for="exp-amount">Amount (USD)</label>
+        <input type="number" id="exp-amount" min="0.01" step="0.01" placeholder="0.00" required>
+        <button class="btn" type="submit">Add expense</button>
+      </form>
+      <p class="small muted" id="expense-message" role="status"></p>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Spending vs. budget</h2>
+      <div id="expense-summary"></div>
+      <p class="small muted" style="margin-bottom:0">Total spent: <strong id="expense-total">$3,859.09</strong> · <span id="expense-count">23 expenses</span> this month.</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h2 style="margin-top:0">All November expenses</h2>
+    <label for="filter-cat">Filter by category</label>
+    <select id="filter-cat" style="max-width:320px"><option value="">All categories</option></select>
+    <div style="overflow-x:auto">
+    <table id="expense-table">
+      <thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="num">Amount</th><th></th></tr></thead>
+      <tbody id="expense-rows"></tbody>
+    </table>
+    </div>
+    <p class="small muted" id="expense-empty" hidden>No expenses match this filter yet.</p>
+  </div>
+</section>
+
+<!-- ============ GOALS ============ -->
+<section class="page" id="page-goals" aria-label="Savings goals">
+  <p class="kicker">Savings Goals</p>
+  <h1>Save for what matters.</h1>
+  <p class="lede">Four goals, $12,200 saved of $25,400 targeted. Add money whenever you can — even $25 moves the bar — and watch the finish line get closer.</p>
+  <div class="grid grid-2" id="goals-grid"></div>
+  <div class="grid grid-2" style="margin-top:16px">
+    <div class="card">
+      <h2 style="margin-top:0">Add money to a goal</h2>
+      <form id="goal-form">
+        <label for="goal-select">Goal</label>
+        <select id="goal-select"></select>
+        <label for="goal-amount">Amount (USD)</label>
+        <input type="number" id="goal-amount" min="1" step="1" placeholder="100" required>
+        <button class="btn" type="submit">Add to goal</button>
+      </form>
+      <p class="small muted" id="goal-message" role="status"></p>
+    </div>
+    <div class="card">
+      <h2 style="margin-top:0">Start a new goal</h2>
+      <form id="new-goal-form">
+        <label for="new-goal-name">Goal name</label>
+        <input type="text" id="new-goal-name" placeholder="e.g. New washing machine" maxlength="60" required>
+        <label for="new-goal-target">Target amount (USD)</label>
+        <input type="number" id="new-goal-target" min="1" step="1" placeholder="1500" required>
+        <button class="btn amber" type="submit">Create goal</button>
+      </form>
+      <p class="small muted">Tip: a goal with a date and a monthly amount is twice as likely to happen. The vacation goal needs just $600 more — $200 a month for three months.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GUIDE ============ -->
+<section class="page" id="page-guide" aria-label="Guide and example family">
+  <p class="kicker">Guide · Learn the method</p>
+  <h1>The 50/30/20 rule, in plain English.</h1>
+  <p class="lede">Split after-tax income three ways: 50% needs, 30% wants, 20% savings. It is not a diet — it is a map. Here is exactly how one real family uses it.</p>
+
+  <div class="grid grid-3">
+    <div class="card"><h3>50% — Needs</h3><p>Rent, groceries, transport, utilities, insurance, minimum bills. If needs pass 60%, the fix is usually housing or transport, not willpower.</p><p class="goal-amount">$2,600</p></div>
+    <div class="card"><h3>30% — Wants</h3><p>Dining out, streaming, trips, hobbies, new clothes. Wants are not waste — a budget with zero fun is a budget nobody keeps.</p><p class="goal-amount">$1,560</p></div>
+    <div class="card"><h3>20% — Savings</h3><p>Emergency fund first, then retirement and big goals. Automate it on payday so saving happens before spending can.</p><p class="goal-amount">$1,040</p></div>
+  </div>
+
+  <h2>Example family: the Alvarez household</h2>
+  <p>Two adults, two children (ages 7 and 10), renting a 3-bedroom home. Combined after-tax income <strong>$5,200 a month</strong>. Here is their full plan — the same numbers the planner and dashboard use.</p>
+  <div class="card" style="overflow-x:auto">
+  <table>
+    <thead><tr><th>Category</th><th>Group</th><th class="num">Monthly</th><th class="num">Share</th><th>Notes</th></tr></thead>
+    <tbody id="example-table"></tbody>
+    <tfoot><tr><th colspan="2">Total</th><th class="num">$5,200</th><th class="num">100%</th><th>Every dollar assigned</th></tr></tfoot>
+  </table>
+  </div>
+
+  <h2>Six habits that make it stick</h2>
+  <div class="grid grid-2" id="tips-grid"></div>
+
+  <div class="callout">
+    <strong>Start tonight:</strong> write down your income, list your needs, and give the rest a job. A rough plan you actually use beats a perfect plan you never open. Then come back here, set your numbers in the <a href="#/planner">planner</a>, and track your first week in the <a href="#/expenses">expense tracker</a>.
+  </div>
+</section>
+
+</main>
+
+<footer class="site">
+  <p><strong>Hearth</strong> — a household budget site. All figures are the Alvarez family's example plan for November 2026; your own numbers are stored only in your browser. No account, no ads, no tracking, no network requests.</p>
+  <p class="small">Made with plain HTML, CSS and JavaScript. Works offline on desktop and phone.</p>
+</footer>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>
